@@ -1,0 +1,74 @@
+pipeline {
+    agent {
+        label 'JAVA'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
+            }
+        }
+
+        stage('Java Build and SonarCloud Scan') {
+            steps {
+                withSonarQubeEnv('SONARQUBE') {
+                    withCredentials([string(credentialsId: 'sonar_ids', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            mvn clean verify sonar:sonar \
+                            -Dsonar.projectKey=karthik23081998_spring-petclinic \
+                            -Dsonar.projectName=spring-petclinic \
+                            -Dsonar.organization=karthik23081998 \
+                            -Dsonar.host.url=https://sonarcloud.io \
+                            -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Upload to JFrog Artifactory') {
+            steps {
+                script {
+                    // Connect to configured JFrog instance
+                    def server = Artifactory.server('jfrog_id')
+
+                    // Create a new build info object
+                    def buildInfo = Artifactory.newBuildInfo()
+                    buildInfo.env.capture = true
+
+                    // Define the upload spec
+                    def uploadSpec = """{
+                        "files": [
+                            {
+                                "pattern": "target/*.jar",
+                                "target": "jfrogjava-libs-release/"
+                            }
+                        ]
+                    }"""
+
+                    // Upload the artifact(s)
+                    server.upload(spec: uploadSpec, buildInfo: buildInfo)
+
+                    // Publish build info to Artifactory
+                    server.publishBuildInfo(buildInfo)
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+            junit '**/target/surefire-reports/*.xml'
+        }
+
+        success {
+            echo '✅ Build, SonarCloud scan, and JFrog upload completed successfully!'
+        }
+
+        failure {
+            echo '❌ Build or deployment failed! Check the Jenkins logs for details.'
+        }
+    }
+}
