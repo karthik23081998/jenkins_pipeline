@@ -4,6 +4,7 @@ pipeline {
     }
 
     stages {
+
         stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
@@ -55,12 +56,15 @@ pipeline {
                 }
             }
         }
-        stage ("Dockerfile build") {
-        agent {
-            label 'node1 '
-        } 
-            sh 'Docker image build -t karthik:1.0 .'
-            sh 'docker image ls'
+
+        stage('Docker Build') {
+            agent { label 'node1' }
+            steps {
+                sh '''
+                    docker build -t karthik:1.0 .
+                    docker image ls
+                '''
+            }
         }
     }
 
@@ -71,7 +75,7 @@ pipeline {
         }
 
         success {
-            echo '✅ Build, SonarCloud scan, and JFrog upload completed successfully!'
+            echo '✅ Build, SonarCloud scan, JFrog upload, and Docker build completed successfully!'
         }
 
         failure {
