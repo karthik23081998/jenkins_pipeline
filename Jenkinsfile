@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'JAVA' }
 
+    tool {
+        Maven 'MAVEN'
+    }
+
     stages {
         stage('Git Checkout') {
             steps {
