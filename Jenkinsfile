@@ -54,4 +54,7 @@ pipeline {
             echo '✅ Build and Docker image creation successful!'
         }
         failure {
-            echo '❌ Build failed! Check the Jen
+            echo '❌ Build failed! Check the Jenkins logs for details.'
+        }
+    }
+}
