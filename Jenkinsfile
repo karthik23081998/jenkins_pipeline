@@ -21,7 +21,7 @@ pipeline {
             steps {
                 dir('spring-petclinic') {
                     withSonarQubeEnv("${SONARQUBE}") {
-                        withCredentials([string(credentialsId: 'sonar_ids', variable: 'SONAR_TOKEN')]) {
+                        withCredentials([string(credentialsId: 'sonar_idds', variable: 'SONAR_TOKEN')]) {
                             sh '''
                                 echo "🏗️ Running Maven build and SonarQube analysis..."
                                 mvn clean verify sonar:sonar \
