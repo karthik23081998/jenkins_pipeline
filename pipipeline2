@@ -55,11 +55,10 @@ pipeline {
                 }
             }
         }
-        stage ("Dockerfile build")
+        stage ("Dockerfile build") {
         agent {
             label 'node1 '
-        }
-        steps {
+        } 
             sh 'Docker image build -t karthik:1.0 .'
             sh 'docker image ls'
         }
