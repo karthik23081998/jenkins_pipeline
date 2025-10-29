@@ -1,11 +1,8 @@
 pipeline {
     agent { label 'JAVA' }
 
-    tool {
-        Maven 'MAVEN'
-    }
-
     stages {
+
         stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
@@ -29,28 +26,6 @@ pipeline {
             }
         }
 
-        stage('Upload to JFrog Artifactory') {
-            steps {
-                script {
-                    def server = Artifactory.server('JFROG')  // Must match Jenkins config ID
-                    def buildInfo = Artifactory.newBuildInfo()
-                    buildInfo.env.capture = true
-
-                    def uploadSpec = """{
-                        "files": [
-                            {
-                                "pattern": "target/*.jar",
-                                "target": "libs-release-local/"
-                            }
-                        ]
-                    }"""
-
-                    server.upload(spec: uploadSpec, buildInfo: buildInfo)
-                    server.publishBuildInfo(buildInfo)
-                }
-            }
-        }
-
         stage('Docker Build') {
             agent { label 'node1' }
             steps {
@@ -67,11 +42,13 @@ pipeline {
             archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             junit '**/target/surefire-reports/*.xml'
         }
+
         success {
-            echo '✅ Build, SonarCloud scan, JFrog upload, and Docker build completed successfully!'
+            echo '✅ Build, SonarCloud scan, and Docker build completed successfully!'
         }
+
         failure {
-            echo '❌ Build or deployment failed! Check the Jenkins logs for details.'
+            echo '❌ Build failed! Check the Jenkins logs for details.'
         }
     }
 }
