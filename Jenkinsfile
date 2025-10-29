@@ -32,6 +32,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
+                cd spring-petclinic
                     docker build -t karthik:1.0 .
                     docker image ls
                 '''
