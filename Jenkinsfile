@@ -32,7 +32,6 @@ pipeline {
         }
 
         stage('Docker Build') {
-            agent { label 'node1' }
             steps {
                 sh '''
                     docker build -t karthik:1.0 .
