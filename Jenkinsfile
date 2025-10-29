@@ -14,7 +14,7 @@ pipeline {
         stage('Java Build and SonarCloud Scan') {
             steps {
                 withSonarQubeEnv('SONARQUBE') {
-                    withCredentials([string(credentialsId: 'karthikk', variable: 'SONAR_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'kar', variable: 'SONAR_TOKEN')]) {
                         sh '''
                             mvn clean verify sonar:sonar \
                             -Dsonar.projectKey=karthik23081998_spring-petclinic \
