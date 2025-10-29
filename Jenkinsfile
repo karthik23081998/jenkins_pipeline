@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'JAVA' }
 
+    tools {
+        maven 'MAVEN'   // Name must match the Maven installation name in Jenkins  // Optional: if you configured JDK tool
+    }
+
     stages {
         stage('Git Checkout') {
             steps {
@@ -28,7 +32,6 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
-                    echo "Building Docker image..."
                     docker build -t karthik:1.0 .
                     docker image ls
                 '''
