@@ -1,6 +1,11 @@
 pipeline {
     agent { label 'JAVA' }
 
+    tools {
+        maven 'MAVEN'      // Make sure "MAVEN3" is defined in Jenkins → Manage Jenkins → Tools → Maven Installations
+        jdk 'JAVA17'        // Optional: if you have a managed JDK, specify it here
+    }
+
     stages {
 
         stage('Git Checkout') {
