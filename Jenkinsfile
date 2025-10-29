@@ -1,10 +1,7 @@
 pipeline {
-    agent {
-        label 'JAVA'
-    }
+    agent { label 'JAVA' }
 
     stages {
-
         stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
@@ -14,7 +11,7 @@ pipeline {
         stage('Java Build and SonarCloud Scan') {
             steps {
                 withSonarQubeEnv('SONARQUBE') {
-                    withCredentials([string(credentialsId: 'kar', variable: 'SONAR_TOKEN')]) {
+                    withCredentials([string(credentialsId: 'sonar_idds', variable: 'SONAR_TOKEN')]) {
                         sh '''
                             mvn clean verify sonar:sonar \
                             -Dsonar.projectKey=karthik23081998_spring-petclinic \
@@ -31,27 +28,20 @@ pipeline {
         stage('Upload to JFrog Artifactory') {
             steps {
                 script {
-                    // Connect to configured JFrog instance
-                    def server = Artifactory.server('jfrog_id')
-
-                    // Create a new build info object
+                    def server = Artifactory.server('JFROG')  // Must match Jenkins config ID
                     def buildInfo = Artifactory.newBuildInfo()
                     buildInfo.env.capture = true
 
-                    // Define the upload spec
                     def uploadSpec = """{
                         "files": [
                             {
                                 "pattern": "target/*.jar",
-                                "target": "jfrogjava-libs-release/"
+                                "target": "libs-release-local/"
                             }
                         ]
                     }"""
 
-                    // Upload the artifact(s)
                     server.upload(spec: uploadSpec, buildInfo: buildInfo)
-
-                    // Publish build info to Artifactory
                     server.publishBuildInfo(buildInfo)
                 }
             }
@@ -73,11 +63,9 @@ pipeline {
             archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             junit '**/target/surefire-reports/*.xml'
         }
-
         success {
             echo '✅ Build, SonarCloud scan, JFrog upload, and Docker build completed successfully!'
         }
-
         failure {
             echo '❌ Build or deployment failed! Check the Jenkins logs for details.'
         }
